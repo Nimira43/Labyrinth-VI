@@ -9,6 +9,8 @@ export const shared = {
   uCameraPos: { value: new THREE.Vector3() },
   uFogDensity: { value: 0 },
   uTorch: { value: 0 },
+  uTorchPower: { value: 1 },
+  uViewDir: { value: new THREE.Vector3(0, 0, -1) },
 }
 
 function makeSurface(level, surface, breath) {

@@ -9,8 +9,10 @@ uniform float uLevel;
 uniform float uSurface;
 uniform vec2 uPanelSize;
 uniform vec3 uCameraPos;
+uniform vec3 uViewDir;     // where the camera (and the torch) is pointing
 uniform float uFogDensity;  // 0 in the debug view; the game will close it in tight
 uniform float uTorch;       // 0 = overhead debug light, 1 = light carried by the player
+uniform float uTorchPower;  // torch brightness, flickered from JS
 
 varying vec3 vWorld;
 varying vec3 vNormal;
@@ -64,7 +66,9 @@ void main() {
   vec3 col = pal.base * (0.65 + 0.7 * grime) * (0.85 + 0.3 * grit);
 
   // Veins: two layers of ridged noise drifting slowly through the surface.
-  vec3 vp = p * pal.veinScale + vec3(0.0, t * pal.flow, t * pal.flow * 0.5);
+  // Up close (first person) the veins need to be finer than in the overhead view.
+  float detail = mix(1.0, 2.6, uTorch);
+  vec3 vp = p * pal.veinScale * detail + vec3(0.0, t * pal.flow, t * pal.flow * 0.5);
   float v = veins(vp) * 0.85 + veins(vp * 2.3 + 11.0) * 0.4;
   v = smoothstep(0.25, 0.95, v);          // keep only the strongest threads
   v *= smoothstep(0.35, 0.75, grime);     // veins gather in patches, leaving dead stone between
@@ -79,7 +83,10 @@ void main() {
     vec3 toCam = uCameraPos - p;
     float d = length(toCam);
     float lambert = max(dot(n, toCam / d), 0.0);
-    light = (0.15 + 0.85 * lambert) / (1.0 + d * d * 0.06);
+    // A narrow cone straight ahead of the eye, plus a weak spill all around.
+    float cone = smoothstep(0.80, 0.97, dot(-toCam / d, uViewDir));
+    light = (0.12 + 0.88 * lambert) * (0.35 + 0.9 * cone) / (1.0 + d * d * 0.05);
+    light *= uTorchPower;
   } else {
     vec3 sun = normalize(vec3(0.4, 1.0, 0.3));
     light = 0.45 + 0.55 * max(dot(n, sun), 0.0);
@@ -91,10 +98,13 @@ void main() {
     light *= mix(0.35, 1.0, smoothstep(0.0, 0.35, h));
   }
 
-  col *= light;
+  // The torch reveals the stone; overhead debug light keeps the original look.
+  col *= light * mix(1.0, 2.8, uTorch);
 
   // Veins glow on their own: they are alive, not lit.
-  col += pal.vein * v * (0.06 + 0.95 * pulse);
+  // In the dark they only smoulder; the torch beam wakes them fully.
+  float wake = mix(1.0, 0.22 + 0.95 * clamp(light * 1.6, 0.0, 1.0), uTorch);
+  col += pal.vein * v * (0.06 + 0.95 * pulse) * wake;
 
   // Level 3: wet sheen that catches the heartbeat.
   if (L == 2) {

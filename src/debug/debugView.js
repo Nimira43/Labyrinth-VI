@@ -77,7 +77,7 @@ export function createDebugView(container) {
     const k = e.key.toLowerCase()
     if (k === 'r') {
       state.seed = randomSeed()
-      history.replaceState(null, '', `?seed=${state.seed}`)
+      history.replaceState(null, '', `?debug&seed=${state.seed}`)
       rebuild({ keepCamera: true })
     } else if (k === 'e') {
       state.exploded = !state.exploded
@@ -102,7 +102,7 @@ export function createDebugView(container) {
   })
 
   rebuild()
-  history.replaceState(null, '', `?seed=${state.seed}`)
+  history.replaceState(null, '', `?debug&seed=${state.seed}`)
 
   const timer = new THREE.Timer()
   renderer.setAnimationLoop((now) => {
@@ -180,7 +180,7 @@ function buildWorld(lab, levelMaterials, state) {
     return group
   })
 
-  // ── Level 3 roof, with the gap the light falls through ────
+  // Level 3 roof, with the gap the light falls through
   const roof = new THREE.Group()
   {
     const tiles = []
@@ -196,7 +196,7 @@ function buildWorld(lab, levelMaterials, state) {
     root.add(roof)
   }
 
-  // Lift shafts and platforms 
+  // Lift shafts and platforms
   lab.lifts.forEach((lift, i) => {
     const bottom = baseY(lift.fromLevel)
     const top = baseY(lift.toLevel)
@@ -232,7 +232,7 @@ function buildWorld(lab, levelMaterials, state) {
     })
   })
 
-  // Start marker 
+  // Start marker   
   {
     const mat = new THREE.MeshBasicMaterial({ color: '#ffffff', wireframe: true })
     owned.push(mat)
@@ -245,7 +245,7 @@ function buildWorld(lab, levelMaterials, state) {
     })
   }
 
-  // Keycards
+  // Keycards 
   lab.keycards.forEach((card) => {
     const mat = new THREE.MeshBasicMaterial({ color: '#ffd23f' })
     owned.push(mat)
@@ -259,7 +259,7 @@ function buildWorld(lab, levelMaterials, state) {
     })
   })
 
-  // Exit: shimmering beam through the roof gap 
+  // Exit: shimmering beam through the roof gap
   {
     const beamHeight = WALL_HEIGHT + 14
     const beamMat = new THREE.ShaderMaterial({

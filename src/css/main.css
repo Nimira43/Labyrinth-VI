@@ -27,7 +27,11 @@ canvas {
   left: 16px;
   width: min(360px, calc(100vw - 32px));
   padding: 14px 16px;
-  font: 12px/1.5 ui-monospace, 'Cascadia Code', Consolas, monospace;
+  font:
+    12px/1.5 ui-monospace,
+    "Cascadia Code",
+    Consolas,
+    monospace;
   color: #c9c9cf;
   background: rgba(8, 8, 10, 0.78);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -112,4 +116,156 @@ canvas {
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 3px;
+}
+
+.intro {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.55),
+    rgba(0, 0, 0, 0.92)
+  );
+  cursor: pointer;
+  transition: opacity 0.4s;
+  user-select: none;
+}
+
+.intro.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.intro-inner {
+  text-align: center;
+  color: #9aa0b4;
+  font:
+    13px/1.6 ui-monospace,
+    "Cascadia Code",
+    Consolas,
+    monospace;
+}
+
+.intro h1 {
+  margin: 0 0 18px;
+  font:
+    400 clamp(36px, 7vw, 72px) / 1 Georgia,
+    "Times New Roman",
+    serif;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #d9dcea;
+  text-shadow: 0 0 24px rgba(90, 140, 255, 0.35);
+}
+
+.intro h1 span {
+  color: #b3122a;
+  text-shadow: 0 0 22px rgba(200, 10, 40, 0.6);
+}
+
+.intro .prompt {
+  margin: 0 0 28px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #cfd3e6;
+  animation: breathe 2.8s ease-in-out infinite;
+}
+
+.intro .controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 18px;
+}
+
+.intro .dev {
+  margin-top: 26px;
+  font-size: 11px;
+  color: #555a6b;
+}
+
+.intro .dev a {
+  color: #7882a3;
+}
+
+.intro kbd {
+  display: inline-block;
+  min-width: 18px;
+  margin-right: 3px;
+  padding: 0 5px;
+  font: inherit;
+  color: #dde;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 3px;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.crosshair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  border-radius: 50%;
+  background: rgba(220, 225, 240, 0.45);
+  pointer-events: none;
+}
+
+.crosshair.hidden {
+  display: none;
+}
+
+.level-banner {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 30%;
+  text-align: center;
+  font:
+    400 clamp(22px, 4vw, 40px) / 1 Georgia,
+    "Times New Roman",
+    serif;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: #e6e8f2;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.level-banner.show {
+  animation: banner 3.2s ease-out forwards;
+}
+
+@keyframes banner {
+  0% {
+    opacity: 0;
+    letter-spacing: 0.6em;
+  }
+
+  20% {
+    opacity: 0.85;
+  }
+
+  70% {
+    opacity: 0.85;
+  }
+
+  100% {
+    opacity: 0;
+    letter-spacing: 0.4em;
+  }
 }
