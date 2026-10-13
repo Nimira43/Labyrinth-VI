@@ -1,10 +1,6 @@
 import { N, E, S, W } from '../maze/grid.js'
 import { CELL, WALL_THICK } from '../config.js'
 
-// Keeps the player (a circle on the X/Z plane) out of the walls.
-// Each wall is a thin box on a cell edge; we only test the 3×3 cells around the player.
-// Cells in `blocked` (e.g. an open lift-shaft hole in the floor) act as solid blocks.
-
 const HALF = CELL / 2
 const LONG = (CELL + WALL_THICK) / 2
 const THIN = WALL_THICK / 2
@@ -25,18 +21,22 @@ export function resolveCollisions(grid, pos, radius, coords, blocked) {
         const px = coords.cx(x)
         const pz = coords.cz(z)
 
-        if (blocked?.has(i)) moved = pushOut(pos, radius, px, pz, HALF, HALF) || moved
-        if (c & N) moved = pushOut(pos, radius, px, pz - HALF, LONG, THIN) || moved
-        if (c & S) moved = pushOut(pos, radius, px, pz + HALF, LONG, THIN) || moved
-        if (c & W) moved = pushOut(pos, radius, px - HALF, pz, THIN, LONG) || moved
-        if (c & E) moved = pushOut(pos, radius, px + HALF, pz, THIN, LONG) || moved
+        if (blocked?.has(i))
+          moved = pushOut(pos, radius, px, pz, HALF, HALF) || moved
+        if (c & N)
+          moved = pushOut(pos, radius, px, pz - HALF, LONG, THIN) || moved
+        if (c & S)
+          moved = pushOut(pos, radius, px, pz + HALF, LONG, THIN) || moved
+        if (c & W)
+          moved = pushOut(pos, radius, px - HALF, pz, THIN, LONG) || moved
+        if (c & E)
+          moved = pushOut(pos, radius, px + HALF, pz, THIN, LONG) || moved
       }
     }
     if (!moved) break
   }
 }
 
-// Circle vs axis-aligned box, pushing the circle out along the shortest route.
 function pushOut(pos, r, bx, bz, hx, hz) {
   const qx = Math.max(bx - hx, Math.min(pos.x, bx + hx))
   const qz = Math.max(bz - hz, Math.min(pos.z, bz + hz))
@@ -50,7 +50,6 @@ function pushOut(pos, r, bx, bz, hx, hz) {
     pos.x += (dx / d) * (r - d)
     pos.z += (dz / d) * (r - d)
   } else {
-    // Centre is inside the box: leave by the nearest face.
     const ox = hx - Math.abs(pos.x - bx)
     const oz = hz - Math.abs(pos.z - bz)
     if (ox < oz) pos.x += Math.sign(pos.x - bx || 1) * (ox + r)

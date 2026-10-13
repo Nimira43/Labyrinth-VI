@@ -1,12 +1,5 @@
 import { createGrid, DIRS, index, inBounds, carve, hasWall } from './grid.js'
 
-// Carves one maze floor with an iterative recursive backtracker.
-// That gives long, winding corridors with plenty of dead ends.
-//
-// `loopChance` then knocks out a few extra walls so the maze has loops.
-// Loops matter for a horror maze: the player can't simply "follow the left
-// wall" and they'll come back to places they've already been.
-
 export function generateFloor(width, depth, rng, { loopChance = 0.06 } = {}) {
   const grid = createGrid(width, depth)
   const visited = new Uint8Array(width * depth)
@@ -38,7 +31,6 @@ export function generateFloor(width, depth, rng, { loopChance = 0.06 } = {}) {
     stack.push([nx, nz])
   }
 
-  // Braid: open some extra interior walls to create loops.
   for (let z = 0; z < depth; z++) {
     for (let x = 0; x < width; x++) {
       if (!rng.chance(loopChance)) continue

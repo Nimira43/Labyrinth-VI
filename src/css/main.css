@@ -255,17 +255,226 @@ canvas {
     opacity: 0;
     letter-spacing: 0.6em;
   }
-
   20% {
     opacity: 0.85;
   }
-
   70% {
     opacity: 0.85;
   }
-
   100% {
     opacity: 0;
     letter-spacing: 0.4em;
   }
+}
+
+.cards-hud {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  gap: 8px;
+  pointer-events: none;
+  transition: opacity 0.6s;
+}
+
+.cards-hud.hidden {
+  opacity: 0;
+}
+
+.card-slot {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 22px;
+  border: 1px dashed rgba(200, 205, 225, 0.25);
+  border-radius: 3px;
+  font:
+    10px/1 ui-monospace,
+    "Cascadia Code",
+    Consolas,
+    monospace;
+  color: rgba(200, 205, 225, 0.3);
+  transition:
+    background 0.5s,
+    border-color 0.5s,
+    color 0.5s,
+    box-shadow 0.5s;
+}
+
+.card-slot.have {
+  border: 1px solid #ffd23f;
+  background: linear-gradient(135deg, #ffd23f, #c98a12);
+  color: #2b1d00;
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(255, 190, 50, 0.35);
+}
+
+.card-slot.flash {
+  animation: card-flash 0.9s ease-out;
+}
+
+@keyframes card-flash {
+  0% {
+    transform: scale(1.8);
+    box-shadow: 0 0 40px rgba(255, 210, 80, 0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.prompt-hud {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 22%;
+  padding: 0 16px;
+  text-align: center;
+  font:
+    13px/1.4 ui-monospace,
+    "Cascadia Code",
+    Consolas,
+    monospace;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #e3e6f2;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.9);
+  opacity: 0;
+  transition: opacity 0.25s;
+  pointer-events: none;
+}
+
+.prompt-hud.show {
+  opacity: 0.85;
+}
+
+.message-hud {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12%;
+  padding: 0 16px;
+  text-align: center;
+  font:
+    italic 18px/1.4 Georgia,
+    "Times New Roman",
+    serif;
+  letter-spacing: 0.04em;
+  color: #e9dcc4;
+  text-shadow: 0 0 14px rgba(0, 0, 0, 1);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.message-hud.show {
+  animation: message 4.5s ease-out forwards;
+}
+
+@keyframes message {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  12% {
+    opacity: 0.95;
+    transform: translateY(0);
+  }
+  75% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.escape {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: #fff6e4;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 1.8s ease-in,
+    background 4s ease-in-out;
+}
+
+.escape.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.escape.settle {
+  background: #070504;
+}
+
+.escape-card {
+  text-align: center;
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 2.5s ease-out 3s,
+    transform 2.5s ease-out 3s;
+}
+
+.escape.settle .escape-card {
+  opacity: 1;
+  transform: none;
+}
+
+.escape h2 {
+  margin: 0 0 20px;
+  font:
+    400 clamp(28px, 5.5vw, 56px) / 1.15 Georgia,
+    "Times New Roman",
+    serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #f4e6c8;
+  text-shadow: 0 0 30px rgba(255, 210, 140, 0.35);
+}
+
+.escape-time {
+  margin: 0 0 34px;
+  font:
+    13px/1.6 ui-monospace,
+    "Cascadia Code",
+    Consolas,
+    monospace;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: #9d917c;
+}
+
+.escape-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.escape-actions button {
+  padding: 10px 18px;
+  font:
+    12px/1 ui-monospace,
+    "Cascadia Code",
+    Consolas,
+    monospace;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #f4e6c8;
+  background: transparent;
+  border: 1px solid rgba(244, 230, 200, 0.35);
+  border-radius: 3px;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+
+.escape-actions button:hover {
+  background: rgba(244, 230, 200, 0.08);
+  border-color: rgba(244, 230, 200, 0.7);
 }
