@@ -1,6 +1,15 @@
 import { randomSeed } from '../maze/rng.js'
 
-export function createOverlay(container, { seed }) {
+export function createOverlay(
+  container,
+  {
+    seed,
+    needsAudioUnlock = false,
+    volumes = { music: 0.3, sfx: 0.9 },
+    onMusicVolume,
+    onSfxVolume,
+  },
+) {
   const el = (cls, html = '') => {
     const div = document.createElement('div')
     div.className = cls
@@ -13,13 +22,17 @@ export function createOverlay(container, { seed }) {
     'intro',
     `<div class='intro-inner'>
       <h1>Labyrinth <span>VI</span></h1>
-      <p class='prompt'>Click to enter</p>
+      <p class='prompt'>${needsAudioUnlock ? 'Click to begin' : 'Click to enter'}</p>
       <div class='controls'>
         <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span>
         <span><kbd>Shift</kbd> run</span>
         <span><kbd>E</kbd> use lift</span>
         <span>Mouse look</span>
         <span><kbd>Esc</kbd> pause</span>
+      </div>
+      <div class='volume'>
+        <label>Music <input type='range' min='0' max='1' step='0.01' data-vol='music' value='${volumes.music}' /></label>
+        <label>Effects <input type='range' min='0' max='1' step='0.01' data-vol='sfx' value='${volumes.sfx}' /></label>
       </div>
       <div class='dev'>
         ${import.meta.env.DEV ? 'dev · <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> jump to a floor · <kbd>K</kbd> keycards · ' : ''}
@@ -59,9 +72,17 @@ export function createOverlay(container, { seed }) {
     if (act === 'again') location.reload()
   })
 
+  intro.querySelectorAll('[data-vol]').forEach((input) => {
+    input.addEventListener('input', () => {
+      const v = Number(input.value)
+      if (input.dataset.vol === 'music') onMusicVolume?.(v)
+      else onSfxVolume?.(v)
+    })
+  })
+
   let enterHandler = () => {}
   intro.addEventListener('click', (e) => {
-    if (e.target.closest('a')) return
+    if (e.target.closest('a, .volume')) return
     enterHandler()
   })
 
@@ -72,6 +93,9 @@ export function createOverlay(container, { seed }) {
   return {
     onEnter(fn) {
       enterHandler = fn
+    },
+    audioReady() {
+      intro.querySelector('.prompt').textContent = 'Click to enter'
     },
     showIntro() {
       intro.classList.remove('hidden')
@@ -86,7 +110,7 @@ export function createOverlay(container, { seed }) {
     announce(text) {
       banner.textContent = text
       banner.classList.remove('show')
-      void banner.offsetWidth 
+      void banner.offsetWidth
       banner.classList.add('show')
       clearTimeout(bannerTimer)
       bannerTimer = setTimeout(() => banner.classList.remove('show'), 3200)
@@ -120,8 +144,8 @@ export function createOverlay(container, { seed }) {
       prompt.classList.remove('show')
       escapeEl.querySelector('.escape-time').textContent =
         `Escaped in ${formatTime(time)}`
-      escapeEl.classList.add('show') 
-      setTimeout(() => escapeEl.classList.add('settle'), 2200) 
+      escapeEl.classList.add('show')
+      setTimeout(() => escapeEl.classList.add('settle'), 2200)
     },
   }
 }

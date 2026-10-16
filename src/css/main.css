@@ -478,3 +478,28 @@ canvas {
   background: rgba(244, 230, 200, 0.08);
   border-color: rgba(244, 230, 200, 0.7);
 }
+
+.intro .volume {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 28px;
+  margin-top: 26px;
+  cursor: default;
+}
+
+.intro .volume label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7d8296;
+}
+
+.intro .volume input[type="range"] {
+  width: 120px;
+  accent-color: #8a1022;
+  cursor: pointer;
+}

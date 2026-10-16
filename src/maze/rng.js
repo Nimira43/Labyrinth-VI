@@ -11,7 +11,7 @@ export function createRng(seed) {
 
   return {
     next,
-    int: (max) => Math.floor(next() * max), 
+    int: (max) => Math.floor(next() * max),
     chance: (p) => next() < p,
     pick: (arr) => arr[Math.floor(next() * arr.length)],
     shuffle(arr) {

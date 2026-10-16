@@ -8,7 +8,8 @@ const EYE = 1.6
 const RADIUS = 0.45
 const WALK = 3.0
 const RUN = 5.2
-const ACCEL = 10 
+const ACCEL = 10
+
 const MOVE_KEYS = {
   forward: ['KeyW', 'ArrowUp'],
   back: ['KeyS', 'ArrowDown'],
@@ -17,7 +18,12 @@ const MOVE_KEYS = {
   run: ['ShiftLeft', 'ShiftRight'],
 }
 
-export function createPlayer(camera, lab, coords, { blockedCells }) {
+export function createPlayer(
+  camera,
+  lab,
+  coords,
+  { blockedCells, onStep = () => {} },
+) {
   const controls = new PointerLockControls(camera, document.body)
   const keys = new Set()
   const pos = new THREE.Vector3()
@@ -28,8 +34,8 @@ export function createPlayer(camera, lab, coords, { blockedCells }) {
   const UP = new THREE.Vector3(0, 1, 0)
   let level = 0
   let bob = 0
-  let ride = null 
-  let frozen = false 
+  let ride = null
+  let frozen = false
 
   const down = (name) => MOVE_KEYS[name].some((k) => keys.has(k))
 
@@ -91,7 +97,9 @@ export function createPlayer(camera, lab, coords, { blockedCells }) {
     )
 
     const speed = Math.hypot(vel.x, vel.z)
+    const prevStride = Math.floor(bob / Math.PI)
     bob += dt * speed * 2.1
+    if (Math.floor(bob / Math.PI) !== prevStride && speed > 0.6) onStep(speed)
     const amp = Math.min(speed / WALK, 1.4) * 0.05
     camera.position.set(
       pos.x + right.x * Math.cos(bob) * amp * 0.5,

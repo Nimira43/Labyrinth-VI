@@ -13,6 +13,8 @@ uniform vec3 uViewDir;     // where the camera (and the torch) is pointing
 uniform float uFogDensity;  // 0 in the debug view; the game will close it in tight
 uniform float uTorch;       // 0 = overhead debug light, 1 = light carried by the player
 uniform float uTorchPower;  // torch brightness, flickered from JS
+uniform vec3 uKeyPos;       // keycard position (world)
+uniform float uKeyLevel;    // which floor's keycard is glowing (-1 = none)
 
 varying vec3 vWorld;
 varying vec3 vNormal;
@@ -105,6 +107,17 @@ void main() {
   // In the dark they only smoulder; the torch beam wakes them fully.
   float wake = mix(1.0, 0.22 + 0.95 * clamp(light * 1.6, 0.0, 1.0), uTorch);
   col += pal.vein * v * (0.06 + 0.95 * pulse) * wake;
+
+  // Keycard light: a flickering golden spill on the stone around it, so it can be
+  // spotted round a corner as a warm patch at the end of a corridor.
+  if (abs(uKeyLevel - uLevel) < 0.5) {
+    vec3 toKey = uKeyPos - p;
+    float kd = length(toKey);
+    float spill = exp(-kd * 0.6);                                   // bright close by, a faint tail further out
+    float facing = 0.1 + 0.9 * max(dot(n, toKey / max(kd, 0.001)), 0.0); // surfaces turned away barely catch it
+    float flick = 0.8 + 0.2 * sin(uTime * 9.0) * sin(uTime * 3.7 + kd);
+    col += vec3(1.0, 0.62, 0.18) * spill * facing * flick * 0.2;
+  }
 
   // Level 3: wet sheen that catches the heartbeat.
   if (L == 2) {

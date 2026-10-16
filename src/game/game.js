@@ -8,9 +8,15 @@ import { makeCoords } from '../world/coords.js'
 import { createPlayer } from './player.js'
 import { createLifts } from './lifts.js'
 import { createOverlay } from './overlay.js'
-import { MAZE_WIDTH, MAZE_DEPTH, LOOP_CHANCE } from '../config.js'
+import { createAudio } from '../audio/index.js'
+import {
+  MAZE_WIDTH,
+  MAZE_DEPTH,
+  LOOP_CHANCE,
+  LEVEL_HEIGHT,
+} from '../config.js'
 
-const FOG = [0.1, 0.11, 0.125] 
+const FOG = [0.1, 0.11, 0.125]
 const LEVEL_NAMES = ['Level 1', 'Level 2', 'Level 3']
 const PICKUP_RANGE = 1.3
 const EXIT_RANGE = 1.0
@@ -57,8 +63,20 @@ export function createGame(container) {
   const lifts = createLifts(lab, world)
   lifts.updateBlocked(blocked)
 
-  const player = createPlayer(camera, lab, coords, { blockedCells: blocked })
-  const overlay = createOverlay(container, { seed })
+  const audio = createAudio()
+  audio.music.startTitle()
+
+  const player = createPlayer(camera, lab, coords, {
+    blockedCells: blocked,
+    onStep: (speed) => audio.sfx.step(speed),
+  })
+  const overlay = createOverlay(container, {
+    seed,
+    needsAudioUnlock: !audio.engine.unlocked,
+    volumes: { music: audio.engine.musicVolume, sfx: audio.engine.sfxVolume },
+    onMusicVolume: (v) => audio.engine.setMusicVolume(v),
+    onSfxVolume: (v) => audio.engine.setSfxVolume(v),
+  })
 
   const state = {
     level: -1,
@@ -68,13 +86,33 @@ export function createGame(container) {
     escapeTime: 0,
     playTime: 0,
     interaction: null,
+    entered: false,
+    stuttering: false,
   }
 
-  player.controls.addEventListener('lock', () => overlay.hideIntro())
-  player.controls.addEventListener('unlock', () => {
-    if (!state.escaped) overlay.showIntro()
+  player.controls.addEventListener('lock', () => {
+    overlay.hideIntro()
+    audio.engine.setPaused(false)
   })
-  overlay.onEnter(() => player.controls.lock())
+  player.controls.addEventListener('unlock', () => {
+    if (state.escaped) return
+    overlay.showIntro()
+    audio.engine.setPaused(true)
+  })
+
+  overlay.onEnter(async () => {
+    if (!audio.engine.unlocked) {
+      await audio.engine.unlock()
+      audio.music.resume()
+      overlay.audioReady()
+      return
+    }
+    if (!state.entered) {
+      state.entered = true
+      audio.music.startGame()
+    }
+    player.controls.lock()
+  })
 
   function enterLevel(level, cell) {
     player.spawn(level, cell)
@@ -106,6 +144,9 @@ export function createGame(container) {
     lifts.power(lifts.list[id - 1])
     overlay.setKeycards([...state.keycards])
     overlay.message(CARD_MESSAGES[id])
+    audio.sfx.keycard()
+    audio.sfx.powerUp(false)
+    audio.engine.duck(0.35, 2.5, 3)
   }
 
   function findInteraction() {
@@ -153,6 +194,7 @@ export function createGame(container) {
 
     if (it.kind === 'up' || it.kind === 'down') {
       if (!lifts.send(lift, true)) return
+      audio.sfx.liftDepart(lift.i)
       state.riding = lift
       player.setRide({
         x: coords.cx(lift.x),
@@ -163,6 +205,7 @@ export function createGame(container) {
       world.setVisibleLevels([lift.fromLevel, lift.toLevel])
     } else if (it.kind === 'call') {
       if (!lifts.send(lift, false)) return
+      audio.sfx.liftDepart(lift.i)
       overlay.message(
         player.level === lift.toLevel
           ? 'Far below, something begins to climb.'
@@ -172,6 +215,7 @@ export function createGame(container) {
   }
 
   function onLiftArrive(lift, hadRider) {
+    audio.sfx.liftArrive(lift.i)
     if (!hadRider) return
     player.setLevel(lift.at === 'top' ? lift.toLevel : lift.fromLevel)
     player.setRide(null)
@@ -194,6 +238,8 @@ export function createGame(container) {
     player.freeze()
     overlay.prompt(null)
     overlay.startEscape({ time: state.playTime, seed })
+    audio.sfx.escape()
+    audio.engine.duck(0.2, 5, 8)
     setTimeout(() => document.exitPointerLock?.(), 1400)
   }
 
@@ -237,10 +283,75 @@ export function createGame(container) {
       camera,
       lifts,
       state,
+      audio,
       enterLevel,
       takeKeycard,
       interact,
       findInteraction,
+    }
+  }
+
+  const keyWorld = new THREE.Vector3()
+  const toKey = new THREE.Vector3()
+  const camRight = new THREE.Vector3()
+  function activeKeycard() {
+    const card = lab.keycards.find(
+      (c) => c.level === player.level && !state.keycards.has(c.id),
+    )
+    if (!card) return null
+    keyWorld.set(
+      coords.cx(card.x),
+      card.level * LEVEL_HEIGHT + 1.15,
+      coords.cz(card.z),
+    )
+    return keyWorld
+  }
+
+  function updateKeyGlow() {
+    const key = activeKeycard()
+    shared.uKeyLevel.value = key ? player.level : -1
+    if (key) shared.uKeyPos.value.copy(key)
+  }
+
+  function soundState(t) {
+    const p = player.position
+    const eyeY = camera.position.y
+    const key = activeKeycard()
+    let keyDist = Infinity
+    let keyPan = 0
+    if (key) {
+      toKey.subVectors(key, camera.position)
+      keyDist = toKey.length()
+      camRight.set(1, 0, 0).applyQuaternion(camera.quaternion)
+      keyPan = toKey.normalize().dot(camRight)
+    }
+    return {
+      t,
+      level: state.entered ? player.level : -1,
+      x: p.x,
+      z: p.z,
+      exitDist: Math.hypot(
+        p.x - coords.cx(lab.exit.x),
+        p.z - coords.cz(lab.exit.z),
+      ),
+      keyDist,
+      keyPan,
+      lifts: lifts.list.map((lift) => {
+        const lx = coords.cx(lift.x)
+        const lz = coords.cz(lift.z)
+        const shaftDist = Math.hypot(p.x - lx, p.z - lz)
+        return {
+          distance: Math.hypot(shaftDist, eyeY - (lift.y + 1)),
+          sameFloor: Math.abs(lift.y / LEVEL_HEIGHT - player.level) < 0.5,
+          shaftDist,
+          onShaftFloor:
+            player.level === lift.fromLevel || player.level === lift.toLevel,
+          moving: !!lift.moving && lift.wait <= 0,
+          progress: lift.progress,
+          powered: lift.powered,
+          rider: state.riding === lift,
+        }
+      }),
     }
   }
 
@@ -281,7 +392,15 @@ export function createGame(container) {
     shared.uTime.value = t
     shared.uCameraPos.value.copy(camera.position)
     shared.uViewDir.value.copy(viewDir)
-    shared.uTorchPower.value = torchFlicker(t)
+    const torch = torchFlicker(t)
+    shared.uTorchPower.value = torch
+    if (torch < 0.8 && !state.stuttering && state.entered)
+      audio.sfx.torchCrackle()
+    state.stuttering = torch < 0.8
+
+    updateKeyGlow()
+    audio.music.update()
+    audio.sfx.update(soundState(t))
 
     world.animate(t, dt)
     renderer.render(scene, camera)

@@ -16,14 +16,12 @@ export function buildLabyrinth({
     generateFloor(width, depth, rng, { loopChance }),
   )
   const [f1, f2, f3] = floors
-
   const randomCell = { x: rng.int(width), z: rng.int(depth) }
   const start = bfs(f1, randomCell).farthest
   const fromStart = bfs(f1, start)
   const lift1 = fromStart.farthest
   const fromLift1OnF1 = bfs(f1, lift1)
   const keycard1 = placeKeycard(f1, fromStart, fromLift1OnF1, [start, lift1])
-
   const fromLift1OnF2 = bfs(f2, lift1)
   const lift2 = fromLift1OnF2.farthest
   const fromLift2OnF2 = bfs(f2, lift2)
@@ -31,10 +29,8 @@ export function buildLabyrinth({
     lift1,
     lift2,
   ])
-
   const fromLift2OnF3 = bfs(f3, lift2)
   const exit = fromLift2OnF3.farthest
-
   const fromKey1 = bfs(f1, keycard1)
   const fromKey2 = bfs(f2, keycard2)
   const routes = [

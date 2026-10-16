@@ -10,6 +10,8 @@ export const shared = {
   uTorch: { value: 0 },
   uTorchPower: { value: 1 },
   uViewDir: { value: new THREE.Vector3(0, 0, -1) },
+  uKeyPos: { value: new THREE.Vector3() },
+  uKeyLevel: { value: -1 },
 }
 
 function makeSurface(level, surface, breath) {
@@ -17,7 +19,7 @@ function makeSurface(level, surface, breath) {
     vertexShader,
     fragmentShader,
     uniforms: {
-      ...shared, 
+      ...shared,
       uLevel: { value: level },
       uSurface: { value: surface },
       uBreath: { value: breath },

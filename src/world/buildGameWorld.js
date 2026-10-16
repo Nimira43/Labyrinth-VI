@@ -32,7 +32,7 @@ export function buildGameWorld(lab, levelMaterials) {
   const slabGeo = track(new THREE.BoxGeometry(CELL, SLAB, CELL))
   const ceilGeo = track(
     new THREE.PlaneGeometry(CELL, CELL).rotateX(Math.PI / 2),
-  ) // faces down
+  )
 
   const instanced = (geo, mat, matrices) => {
     const mesh = new THREE.InstancedMesh(geo, mat, matrices.length)
@@ -67,7 +67,7 @@ export function buildGameWorld(lab, levelMaterials) {
       }
     }
     const wallMesh = instanced(wallGeo, levelMaterials[level].wall, walls)
-    wallMesh.frustumCulled = false 
+    wallMesh.frustumCulled = false
     group.add(wallMesh)
 
     const floors = []
@@ -175,7 +175,7 @@ export function buildGameWorld(lab, levelMaterials) {
     const cardMat = track(
       new THREE.MeshBasicMaterial({ color: '#ffd23f', transparent: true }),
     )
-    const cardGeo = track(new THREE.BoxGeometry(0.5, 0.32, 0.03))
+    const cardGeo = track(new THREE.BoxGeometry(0.7, 0.45, 0.04))
     const mesh = new THREE.Mesh(cardGeo, cardMat)
     holder.add(mesh)
 
@@ -186,10 +186,11 @@ export function buildGameWorld(lab, levelMaterials) {
         transparent: true,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
+        fog: false,
       }),
     )
     const halo = new THREE.Sprite(haloMat)
-    halo.scale.setScalar(2.2)
+    halo.scale.setScalar(3.0)
     holder.add(halo)
     levels[card.level].add(holder)
 
@@ -201,7 +202,7 @@ export function buildGameWorld(lab, levelMaterials) {
       if (state.taken) {
         state.fade = Math.min(1, state.fade + dt * 1.6)
         const k = state.fade
-        halo.scale.setScalar(2.2 + k * 6)
+        halo.scale.setScalar(3.0 + k * 6)
         haloMat.opacity = (1 - k) * 0.9
         cardMat.opacity = 1 - k
         mesh.rotation.y += dt * (6 + k * 20)
@@ -211,7 +212,7 @@ export function buildGameWorld(lab, levelMaterials) {
       }
       mesh.rotation.y = t * 1.4
       holder.position.y = y + Math.sin(t * 1.8 + card.id) * 0.08
-      haloMat.opacity = 0.55 + 0.2 * Math.sin(t * 3.0 + card.id)
+      haloMat.opacity = 0.75 + 0.25 * Math.sin(t * 3.0 + card.id)
     })
   })
 

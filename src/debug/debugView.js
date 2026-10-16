@@ -17,9 +17,9 @@ import {
   LOOP_CHANCE,
 } from '../config.js'
 
-const LEVEL_TINT = ['#5b8cff', '#c9b23a', '#ff3344'] 
+const LEVEL_TINT = ['#5b8cff', '#c9b23a', '#ff3344']
 const LIFT_TINT = ['#7fd8ff', '#ffb347']
-const EXPLODED = 5 
+const EXPLODED = 5
 
 export function createDebugView(container) {
   const renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -46,12 +46,12 @@ export function createDebugView(container) {
     seed:
       Number(new URLSearchParams(location.search).get('seed')) || randomSeed(),
     exploded: true,
-    only: -1, 
+    only: -1, // -1 = all floors
     showRoute: true,
     showRoof: false,
   }
 
-  let world = null 
+  let world = null
 
   function rebuild({ keepCamera = false } = {}) {
     if (world) disposeWorld(world)
@@ -134,7 +134,7 @@ function buildWorld(lab, levelMaterials, state) {
   const cz = (z) => (z - (lab.depth - 1) / 2) * CELL
 
   const root = new THREE.Group()
-  const owned = [] 
+  const owned = [] // materials created here, disposed on rebuild
   const animators = []
   const { floorHoles } = shaftHoles(lab)
 
@@ -200,7 +200,7 @@ function buildWorld(lab, levelMaterials, state) {
       walls.length,
     )
     walls.forEach((mat, i) => wallMesh.setMatrixAt(i, mat))
-    wallMesh.frustumCulled = false 
+    wallMesh.frustumCulled = false
     group.add(wallMesh)
 
     const holes = floorHoles[level]
