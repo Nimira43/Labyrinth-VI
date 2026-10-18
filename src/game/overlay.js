@@ -1,5 +1,3 @@
-import { randomSeed } from '../maze/rng.js'
-
 export function createOverlay(
   container,
   {
@@ -36,7 +34,7 @@ export function createOverlay(
       </div>
       <div class='dev'>
         ${import.meta.env.DEV ? 'dev · <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> jump to a floor · <kbd>K</kbd> keycards · ' : ''}
-        seed ${seed} · <a href='?debug&seed=${seed}'>generator view</a>
+        seed <a href='?seed=${seed}' title='Link to this exact labyrinth'>${seed}</a> · <a href='?debug&seed=${seed}'>generator view</a>
       </div>
     </div>`,
   )
@@ -68,8 +66,8 @@ export function createOverlay(
   )
   escapeEl.addEventListener('click', (e) => {
     const act = e.target.closest('button')?.dataset.act
-    if (act === 'new') location.href = `?seed=${randomSeed()}`
-    if (act === 'again') location.reload()
+    if (act === 'new') location.href = location.pathname
+    if (act === 'again') location.href = `?seed=${seed}`
   })
 
   intro.querySelectorAll('[data-vol]').forEach((input) => {

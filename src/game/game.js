@@ -42,10 +42,8 @@ export function createGame(container) {
     0.05,
     80,
   )
-
   const seed =
     Number(new URLSearchParams(location.search).get('seed')) || randomSeed()
-  history.replaceState(null, '', `?seed=${seed}`)
   const lab = buildLabyrinth({
     width: MAZE_WIDTH,
     depth: MAZE_DEPTH,
